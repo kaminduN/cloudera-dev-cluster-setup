@@ -1,0 +1,77 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+    servers=[
+        {
+          :hostname => "lab-master-1",
+          :type => "master",
+          :box => "centos/7",
+          :ip => "172.16.1.50",
+          :ssh_port => '2200',
+          :memory => '4096',
+          :cpu => '1'
+        },
+        {
+          :hostname => "lab-worker-1",
+          :type => "worker",
+          :box => "centos/7",
+          :ip => "172.16.1.51",
+          :ssh_port => '2201',
+          :memory => '4096',
+          :cpu => '1'
+        },
+        {
+          :hostname => "lab-worker-2",
+          :type => "worker",
+          :box => "centos/7",
+          :ip => "172.16.1.52",
+          :ssh_port => '2202',
+          :memory => '4096',
+          :cpu => '1'
+        }
+      ]
+
+    config.vm.define "db" do |db|
+        db.vm.box = "mysql"
+        db.vm.network :private_network, ip: "172.16.1.60"
+
+        config.vm.provider "virtualbox" do |v|
+            v.customize ["modifyvm", :id, "--memory", "1024"]
+            v.customize ["modifyvm", :id, "--cpus", "1"]
+        end
+    end
+
+    # cloudera cache repo where we an download the artifacts from
+    config.vm.define "repo" do |repo|
+        repo.vm.box = "centos/7"
+        repo.vm.network :private_network, ip: "172.16.1.61"
+        repo.vm.network "forwarded_port", guest: 80, host: "80", id: "web"
+
+        config.vm.provider "virtualbox" do |v|
+            v.customize ["modifyvm", :id, "--memory", "1024"]
+            v.customize ["modifyvm", :id, "--cpus", "1"]
+        end
+    end
+
+    servers.each do |machine|
+        config.vm.define machine[:hostname] do |node|
+            node.vm.box = machine[:box]
+            node.vm.hostname = machine[:hostname]
+            node.vm.network :private_network, ip: machine[:ip]
+            node.vm.network "forwarded_port", guest: 22, host: machine[:ssh_port], id: "ssh"
+
+            if machine[:type] != 'master' 
+                node.vm.network "forwarded_port", guest: 7180, host: 7180, id: "manager-ui"
+            end
+
+            # node.vm.synced_folder "../data", "/home/vagrant/data"
+            node.vm.provision "file", source: "./setup.sh", destination: "/home/vagrant/setup.sh"
+
+            node.vm.provider :virtualbox do |vb|
+                vb.customize ["modifyvm", :id, "--memory", machine[:memory]]
+                vb.customize ["modifyvm", :id, "--cpus", machine[:cpu]]
+            end
+        end
+    end
+end

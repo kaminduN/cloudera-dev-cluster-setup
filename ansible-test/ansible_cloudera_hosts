@@ -1,0 +1,12 @@
+[all]
+machine-01 ansible_ssh_host=172.17.8.101 ansible_ssh_user=vagrant
+machine-02 ansible_ssh_host=172.17.8.102 ansible_ssh_user=vagrant
+machine-03 ansible_ssh_host=172.17.8.103 ansible_ssh_user=vagrant
+
+[cloudera-manager-master]
+machine-01
+
+[cloudera-manager-agent]
+machine-01
+machine-02
+machine-03

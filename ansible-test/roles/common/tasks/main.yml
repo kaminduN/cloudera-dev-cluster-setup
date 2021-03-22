@@ -1,0 +1,95 @@
+---
+
+  - name: Install libselinux python bindings
+    yum: 
+      name: {{ item }}
+      state: present
+    with_items:
+      - ntp
+    when: ansible_os_family == "RedHat"
+
+  - name: Enable Network Time Protocol service
+    systemd:
+      name: ntpd
+      state: started
+      enabled: True
+
+  - name: Install libselinux python bindings
+    yum: 
+      name: libselinux-python 
+      state: present
+    when: ansible_os_family == "RedHat"
+  
+  - name: Disable selinux
+    selinux: 
+      state: disabled
+    when: ansible_os_family == "RedHat"
+
+  - name: cloudera reccommends setting vm.swappiness to max of 10 for performance reasons
+    sysctl: 
+      name: vm.swappiness 
+      value: "10" 
+      state: present
+      reload: yes
+
+  - name: Disable iptables # TODO configure iptables for Hadoop
+    service: 
+      name: iptables 
+      enabled: no 
+      state: stopped
+    when: ansible_os_family == "RedHat"
+
+  - name: Disable firewalld # TODO configure firewalld for Hadoop
+    service: 
+      name: firewalld 
+      enabled: no 
+      state: stopped
+    when: ansible_os_family == "RedHat"
+
+  # - name: Disable THP support scripts added to rc.local
+  #   lineinfile:
+  #     path: /etc/rc.local
+  #     line: |
+  #       echo never > /sys/kernel/mm/transparent_hugepage/enabled
+  #       echo never > /sys/kernel/mm/transparent_hugepage/defrag
+
+  # - name: Change permissions of /etc/rc.local to make it run on boot
+  #   shell: chmod +x /etc/rc.d/rc.local
+  #   become_method: sudo
+
+
+  - name: Install sysfsutils for disabling transparent huge pages
+    become: yes
+    apt:
+      name: sysfsutils
+      state: latest
+
+  - name: Disable transparent huge pages for performance
+    become: yes
+    lineinfile:
+      path: /etc/sysfs.conf
+      line: |
+        kernel/mm/transparent_hugepage/enabled = never
+        kernel/mm/transparent_hugepage/defrag = never
+
+
+  - name: Add Cloudera CDH repository to yum configuration
+    template: 
+      src: etc/yum.repos.d/cloudera.repo.j2 
+      dest: /etc/yum.repos.d/cloudera.repo 
+      owner: root 
+      group: root 
+      mode: 0644
+    when: ansible_os_family == "RedHat"
+
+  # - name: Add Cloudera GPG signing key to rpm DB
+  #   rpm_key: 
+  #     state: present 
+  #     key: http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/RPM-GPG-KEY-cloudera
+  #   when: ansible_os_family == "RedHat"
+
+  - name: Install java
+    yum: 
+      name: oracle-j2sdk1.8
+      state: present
+    when: ansible_os_family == "RedHat"

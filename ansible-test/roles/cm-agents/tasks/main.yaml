@@ -1,0 +1,24 @@
+---
+  - name: Install cloudera manager daemons and agents
+    yum: 
+      name: {{ item }}
+      state: present
+    with_items:
+      - cloudera-manager-daemons
+      - cloudera-manager-agent
+    when: ansible_os_family == "RedHat"
+
+  - name: start cloudera services
+    service: 
+      name: cloudera-scm-agent 
+      state: started 
+      enabled: yes
+    when: ansible_os_family == "RedHat"
+
+
+  - name: setup agent config
+    template: 
+      src: etc/cloudera-scm-agent/config.ini.j2 
+      dest: /etc/cloudera-scm-agent/config.ini
+      mode: 0644
+    when: ansible_os_family == "RedHat"

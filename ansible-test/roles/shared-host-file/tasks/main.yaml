@@ -1,0 +1,17 @@
+---
+  - name: share a portion of the host file across all servers
+    lineinfile: 
+      dest: /etc/hosts 
+      regexp: '.*{{ item }}$' 
+      line: "{{ hostvars[item].ansible_ssh_host }} {{item}}" 
+      state: present
+    with_items: groups['all']
+    sudo: true
+  
+  # - name: Configure hosts
+  #   template: 
+  #     src: etc/hosts.j2 
+  #     dest: /etc/hosts 
+  #     owner: root 
+  #     group: root 
+  #     mode: 0644

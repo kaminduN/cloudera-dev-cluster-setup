@@ -1,0 +1,17 @@
+---
+  - name: Install mysql server
+    import_tasks: mysql.yml
+  
+  # ansible-galaxy collection install community.mysql
+  - name: Create a new database with name 'scm'
+    community.mysql.mysql_db:
+      name: scm 
+      state: present
+  
+  - name: Create database user with name 'scm' and password with all database privileges
+    community.mysql.mysql_user:
+      name: scm
+      password: scm
+      priv:
+      'scm.*': 'ALL'
+      state: present

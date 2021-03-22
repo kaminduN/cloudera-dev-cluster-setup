@@ -1,0 +1,31 @@
+---
+# - hosts: all
+#   sudo: yes
+#   roles:
+#     - common
+
+
+- name: cloudera servers
+  hosts: all
+  gather_facts: false
+  sudo: true
+  roles:
+    - shared-host-file
+    - common
+
+
+- name: setup cloudera manager host
+  hosts: cloudera-manager-master
+  gather_facts: false
+  sudo: true
+  roles:
+    - cm-master
+    - cm-master-db
+
+
+- name: setup cloudera agent hosts
+  hosts: cloudera-manager-agent
+  gather_facts: false
+  sudo: true
+  roles:
+    - cm-agent

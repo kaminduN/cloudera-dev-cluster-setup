@@ -1,0 +1,19 @@
+---
+mysql_daemon: mysqld
+
+# switcher to enable/disable role
+mysql_hardening_enabled: true
+
+# ensure the following parameters are set properly
+mysql_remove_remote_root: true
+mysql_remove_anonymous_users: true
+mysql_remove_test_database: true
+
+mysql_python_package: 'MySQL-python'
+
+
+# You have to change this to your own strong enough mysql root password
+mysql_root_password: '-----====>SetR00tPa$$wordH3r3!!!<====-----'
+
+mysql.url: http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+

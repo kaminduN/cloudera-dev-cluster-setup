@@ -1,0 +1,13 @@
+---
+  - name: Install cloudera manager server
+    yum: 
+      name: cloudera-manager-server
+      state: present
+      enabled: yes
+    when: ansible_os_family == "RedHat"
+
+  - name: Remove embedded PostgreSQL properties file
+    file:
+      path: /etc/cloudera-scm-server/db.mgmt.properties
+      state: absent
+

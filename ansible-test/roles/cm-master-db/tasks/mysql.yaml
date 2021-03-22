@@ -1,0 +1,26 @@
+---
+  - name: Install mysql connector
+    yum: 
+      name: install mysql-connector-java
+      state: present
+    when: ansible_os_family == "RedHat"
+
+
+  - name: download mysql
+    get_url: 
+      url: "{{ mysql.url }}" 
+      dest: /tmp/mysql-package.rpm
+  
+  - name: Install package.
+    yum:
+      name: /tmp/mysql-package.rpm
+      state: present
+  
+  - name: start mysql server
+    systemd:
+      state: started
+      name: "{{ mysql_daemon }}"
+      enabled: yes
+  
+  - include: mysql_secure_installation.yml
+    when: mysql_hardening_enabled | bool
